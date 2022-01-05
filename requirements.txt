@@ -1,0 +1,9 @@
+Flask
+gunicorn
+futures
+matplotlib
+pandas
+flask_cors
+rasa
+spacy
+sanic==21.9.3

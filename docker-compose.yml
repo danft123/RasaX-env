@@ -1,0 +1,71 @@
+version: '3'
+
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+
+  rasa_nlu:
+    restart: always
+    image: rasa3:v1
+    networks:
+      - app-tier
+    expose:
+    - 5005
+    ports:
+    - "5005:5005"
+    volumes:
+    - "/home/initiate/codigos/marajo_rasa:/app"
+      #- /home/initiate/codigos/acqua_madre/database:/var/lib/postgresql/data
+    command: "rasa run --enable-api --cors '*' --endpoints endpoints.yml"
+
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    networks:
+      - app-tier
+    environment:
+      MYSQL_ROOT_PASSWORD: rasa
+      MYSQL_DATABASE: rasa
+      MYSQL_USER: rasa
+      MYSQL_PASSWORD: rasa
+
+
+  adminer:
+    image: adminer
+    restart: always
+    networks:
+      - app-tier
+    ports:
+      - 8080:8080
+
+  rasa_actions:
+    depends_on:
+    - rasa_nlu
+    restart: always
+    image: rasa3:v1
+    networks:
+      - app-tier
+    expose:
+    - 5055
+    volumes:
+    - "/home/initiate/codigos/marajo_rasa:/app"
+    command: "rasa run actions"
+      #  postgresql:
+      #    image: bitnami/postgresql:latest
+      #    restart: always
+      #    environment:
+      #      POSTGRESQL_PASSWORD: "rasa"
+      #      POSTGRESQL_USERNAME: "rasa"
+      #      POSTGRESQL_DATABASE: "rasa"
+      #    networks:
+      #      - app-tier
+      #        #volumes:
+      #      #- "/home/initiate/codigos/marajo_rasa/rasa.db:/var/lib/postgresql/rasa.db"
+      #      #- /home/initiate/codigos/marajo_rasa/database:/var/lib/postgresql/data
+      #    ports:
+      #    - "5432:5432"
+      #    expose:
+      #    - 5432
